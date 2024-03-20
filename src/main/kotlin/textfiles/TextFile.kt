@@ -1,6 +1,6 @@
 package textfiles
 
-interface TextFile {
+interface TextFile : Comparable<Any> {
     /**
      * Provides the length of the text file.
      *
@@ -27,4 +27,14 @@ interface TextFile {
      *  if offset + size is larger than the length of the file
      */
     fun deleteText(offset: Int, size: Int)
+
+    override fun compareTo(other: Any): Int {
+        if (other is TextFile) {
+            val thisString: String = this.toString()
+            val otherString: String = other.toString()
+            return thisString.compareTo(otherString)
+        } else {
+            throw UnsupportedOperationException()
+        }
+    }
 }

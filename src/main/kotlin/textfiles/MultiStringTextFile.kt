@@ -15,7 +15,7 @@ class MultiStringTextFile(initialContents: String) : TextFile {
         get() = blocks.size
 
     override val length: Int
-        get() = TODO("To be implemented.")
+        get() = blocks.sumOf { it.length }
 
     init {
         rebalance()
@@ -26,11 +26,45 @@ class MultiStringTextFile(initialContents: String) : TextFile {
      * into blocks of equal size, except that the final block may be shorter.
      */
     fun rebalance() {
-        TODO("To be implemented.")
+        val newBlocks: MutableList<StringBuilder> = mutableListOf()
+        var oldEntries = ""
+        blocks.forEach { oldEntries += it.toString() }
+        for (i in (0..<(length / BLOCK_SIZE))) {
+            val newBuilder = StringBuilder()
+            newBuilder.append(oldEntries.substring(0, BLOCK_SIZE))
+            oldEntries = oldEntries.substring(BLOCK_SIZE)
+            newBlocks.add(newBuilder)
+        }
+        if (oldEntries.isNotEmpty()) {
+            val newBuilder = StringBuilder()
+            newBuilder.append(oldEntries)
+            newBlocks.add(newBuilder)
+        }
+        blocks = newBlocks
     }
 
     override fun insertText(offset: Int, toInsert: String) {
-        TODO("To be implemented.")
+        if (offset > length || offset < 0) {
+            throw FileIndexOutOfBoundsException()
+        }
+        val listOfLengths = blocks.map { it.length }
+        var targetBlock = 0
+        var targetIndex: Int = offset
+        for (i in listOfLengths) {
+            if (targetIndex < i) {
+                break
+            } else {
+                targetIndex -= i
+                targetBlock += 1
+            }
+        }
+        if (offset == length) {
+            val newBuilder: StringBuilder = StringBuilder()
+            newBuilder.append(toInsert)
+            blocks.add(newBuilder)
+        } else {
+            blocks[targetBlock].insert(targetIndex, toInsert)
+        }
     }
 
     override fun deleteText(offset: Int, size: Int) {
@@ -82,5 +116,11 @@ class MultiStringTextFile(initialContents: String) : TextFile {
             }
         }
         blocks = newBlocks
+    }
+
+    override fun toString(): String {
+        var entries = ""
+        blocks.forEach { entries += it.toString() }
+        return entries
     }
 }
